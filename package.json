@@ -1,0 +1,18 @@
+{
+  "name": "raw-text-display-parser",
+  "version": "0.0.0",
+  "description": "Small state machine to parse chat input state when using raw text",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holepunchto/raw-text-display-parser.git"
+  },
+  "author": "Holepunch Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/holepunchto/raw-text-display-parser/issues"
+  },
+  "homepage": "https://github.com/holepunchto/raw-text-display-parser"
+}
