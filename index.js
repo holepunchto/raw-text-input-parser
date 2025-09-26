@@ -43,7 +43,7 @@ module.exports = class RawTextDisplayParser {
   backspace() {
     if (this.position === 0 && !this.range) return
 
-    const last = [...this.text.slice(this.position - 8, this.position)].pop()
+    const last = [...this.text.slice(Math.max(0, this.position - 8), this.position)].pop()
 
     if (!this.range) {
       this.selectRange(this.position - last.length, this.position)
