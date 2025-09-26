@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+  </head>
+  <body>
+    <script type="text/javascript">
+      module = { exports: {} }
+    </script>
+    <textarea></textarea>
+    <pre></pre>
+    <pre></pre>
+    <script type="text/javascript" src="index.js"></script>
+    <script type="text/javascript">
+      const Parser = module.exports
+      const p = new Parser({
+        onlink(link) {
+          console.log('got link', link)
+          p.setLink(link)
+        },
+        onmention(mention) {
+          console.log('got mention', mention)
+          p.setMention(mention, Math.random()) // just mimick an id
+        }
+      })
+
+      const inp = document.getElementsByTagName('textarea')[0]
+      const echo = document.getElementsByTagName('pre')[0]
+      const result = document.getElementsByTagName('pre')[1]
+
+      inp.onkeydown = function (e) {
+        const start = inp.selectionStart
+        const end = inp.selectionEnd
+
+        if (start !== p.position) p.setPosition(start)
+        if (start !== end) p.selectRange(start, end)
+
+        if (e.key.length === 1) p.appendText(e.key)
+        else if (e.key === 'Enter') p.appendText('\n')
+        else if (e.key === 'Backspace') p.backspace()
+        else console.log('ignored', e.key)
+
+        echo.innerText = p.text
+        result.innerText = 'pos=' + p.position + ' word=' + p.word + '\n'
+        result.innerText += JSON.stringify(p.display, null, 2)
+      }
+    </script>
+  </body>
+</html>

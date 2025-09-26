@@ -1,9 +1,19 @@
 module.exports = class RawTextDisplayParser {
-  constructor () {
-    this.display = []
+  constructor(options = {}) {
+    const { text = '', display = [], onmention = noop, onlink = noop } = options
+
+    this.display = display
+    this.text = text
+    this.position = 0
+    this.range = null
+    this.onmention = onmention
+    this.onlink = onlink
+    this.start = 0
+    this.end = 0
+    this.word = ''
   }
 
-  _clearPrevious (upd) {
+  _clearPrevious(upd) {
     for (let i = 0; i < this.display.length; i++) {
       const d = this.display[i]
       if (overlaps(d, upd)) {
@@ -13,7 +23,71 @@ module.exports = class RawTextDisplayParser {
     }
   }
 
-  reset (start, end) {
+  setPosition(position) {
+    this.position = position
+    this.range = null
+  }
+
+  selectRange(start, end) {
+    this.position = start
+    this.range = { start, end }
+  }
+
+  backspace() {
+    if (this.position === 0 && !this.range) return
+    if (!this.range) this.selectRange(this.position - 1, this.position)
+    this.appendText('')
+  }
+
+  appendText(text) {
+    if (this.range) {
+      this._delete(this.range.start, this.range.end)
+      this.range = null
+    }
+
+    if (this.position === this.text.length) {
+      this.text += text
+    } else {
+      this._insert(this.position, this.position + text.length, text)
+    }
+
+    this.position += text.length
+
+    this._updateWord()
+
+    if (this.word[0] === '@') {
+      this.onmention(this.word)
+    } else if (isLink(this.word)) {
+      this.onlink(this.word)
+    }
+  }
+
+  _updateWord() {
+    let start = 0
+    let end = this.text.length
+
+    for (let i = this.position - 1; i >= 0; i--) {
+      const ch = this.text[i]
+      if (ch === ' ' || ch === '\n' || ch === '\t') {
+        start = i + 1
+        break
+      }
+    }
+
+    for (let i = this.position; i < this.text.length; i++) {
+      const ch = this.text[i]
+      if (ch === ' ' || ch === '\n' || ch === '\t') {
+        end = i
+        break
+      }
+    }
+
+    this.word = this.text.slice(start, end)
+    this.start = start
+    this.end = end
+  }
+
+  _insert(start, end, text) {
     const upd = {
       type: 'clear',
       start,
@@ -21,14 +95,45 @@ module.exports = class RawTextDisplayParser {
     }
 
     this._clearPrevious(upd)
+    this.text = this.text.slice(0, start) + text + this.text.slice(start)
+
+    const delta = upd.end - upd.start
+
+    for (const d of this.display) {
+      if (start < d.start) {
+        d.start += delta
+        d.end += delta
+      }
+    }
   }
 
-  setMention (start, input, id) {
-    const end = start + input.length
+  _delete(start, end) {
+    const upd = {
+      type: 'clear',
+      start,
+      end
+    }
+
+    this._clearPrevious(upd)
+    this.text = this.text.slice(0, start) + this.text.slice(end)
+
+    const delta = end - start
+
+    for (const d of this.display) {
+      if (start < d.start) {
+        d.start -= delta
+        d.end -= delta
+      }
+    }
+  }
+
+  setMention(input, id) {
+    if (this.word !== input) return false
+
     const upd = {
       type: 'mention',
-      start,
-      end,
+      start: this.start,
+      end: this.end,
       input,
       id
     }
@@ -37,12 +142,13 @@ module.exports = class RawTextDisplayParser {
     this.display.push(upd)
   }
 
-  setLink (start, link) {
-    const end = start + link.length
+  setLink(link) {
+    if (this.word !== link) return false
+
     const upd = {
       type: 'link',
-      start,
-      end,
+      start: this.start,
+      end: this.end,
       input: link,
       link
     }
@@ -51,7 +157,9 @@ module.exports = class RawTextDisplayParser {
     this.display.push(upd)
   }
 
-  flush (text) {
+  flush() {
+    const text = this.text
+
     for (let i = 0; i < this.display.length; i++) {
       const d = this.display[i]
       if (text.slice(d.start, d.end) !== d.input) {
@@ -67,8 +175,14 @@ module.exports = class RawTextDisplayParser {
   }
 }
 
-function overlaps (a, b) {
+function overlaps(a, b) {
   if (a.start <= b.start && b.start < a.end) return true
   if (b.start <= a.start && a.start < b.end) return true
   return false
 }
+
+function isLink(word) {
+  return word.startsWith('http://') || word.startsWith('https://')
+}
+
+function noop() {}

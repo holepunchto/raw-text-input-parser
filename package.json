@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "Small state machine to parse chat input state when using raw text",
   "main": "index.js",
-  "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "prettier-config-holepunch": "^1.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/holepunchto/raw-text-display-parser.git"

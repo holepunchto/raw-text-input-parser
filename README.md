@@ -8,7 +8,7 @@ npm install raw-text-display-parser
 
 ## Usage
 
-``` js
+```js
 const RawTextDisplayParser = require('raw-text-display-parser')
 
 const parser = new RawTextDisplayParser()
