@@ -13,6 +13,16 @@ module.exports = class RawTextDisplayParser {
     }
   }
 
+  reset (start, end) {
+    const upd = {
+      type: 'clear',
+      start,
+      end
+    }
+
+    this._clearPrevious(upd)
+  }
+
   setMention (start, input, id) {
     const end = start + input.length
     const upd = {

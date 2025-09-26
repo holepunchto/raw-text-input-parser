@@ -21,6 +21,10 @@ parser.setMention(42, '@mafintosh', 'id-42')
 // same for links
 parser.setMention(100, 'https://dr.dk')
 
+// if raw test is copied into the text field and you dont update with o/
+// use reset on the range (here start = 100, end = 110)
+parser.reset(100, 110)
+
 // when you are done flush it
 const result = parser.flush(rawChatInputAsString)
 
