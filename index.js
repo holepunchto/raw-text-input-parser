@@ -156,23 +156,6 @@ module.exports = class RawTextDisplayParser {
     this._clearPrevious(upd)
     this.display.push(upd)
   }
-
-  flush() {
-    const text = this.text
-
-    for (let i = 0; i < this.display.length; i++) {
-      const d = this.display[i]
-      if (text.slice(d.start, d.end) !== d.input) {
-        this.display.splice(i, 1) // just sanity
-        i--
-      }
-    }
-
-    return {
-      display: this.display,
-      text
-    }
-  }
 }
 
 function overlaps(a, b) {
