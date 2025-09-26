@@ -83,8 +83,14 @@ module.exports = class RawTextDisplayParser {
     }
   }
 
-  flush(text) {
-    if (this.text !== text) return null
+  flush(text = this.text) {
+    // some bug, strip formatting
+    if (this.text !== text) {
+      return {
+        text,
+        display: []
+      }
+    }
     return {
       text,
       display
