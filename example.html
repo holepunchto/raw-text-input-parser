@@ -74,13 +74,20 @@
         } else if (e.inputType === 'insertLineBreak') {
           p.appendText('\n')
         }
+
+        if (inp.value !== p.text) {
+          console.log('out of sync, resyncing')
+          p.resync(inp.value)
+          const start = inp.selectionStart
+          const end = inp.selectionEnd
+
+          if (start !== p.position) p.setPosition(start)
+          if (start !== end) p.selectRange(start, end)
+        }
+
         echo.innerText = p.text
         result.innerText = 'pos=' + p.position + ' word=' + p.word + '\n'
         result.innerText += JSON.stringify(p.display, null, 2)
-
-        inp.value = p.text
-        inp.selectionStart = p.position
-        inp.selectionEnd = p.position
       }
 
       inp.onselectionchange = function (e) {

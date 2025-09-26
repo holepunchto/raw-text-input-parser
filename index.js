@@ -162,6 +162,39 @@ module.exports = class RawTextDisplayParser {
     }
   }
 
+  resync (text) {
+    const shared = Math.min(this.text.length, text.length)
+    const display = []
+
+    let end = 0
+    for (; end < shared; end++) {
+      if (this.text[end] === text[end]) continue
+      break
+    }
+
+    let startNew = text.length - 1
+    let startOld = this.text.length - 1
+
+    while (startNew >= 0 && startOld >= 0) {
+      if (this.text[startOld] !== text[startNew]) {
+        startNew++
+        startOld++
+        break
+      }
+      startNew--
+      startOld--
+    }
+
+    for (const d of this.display) {
+      if (d.end < end || startOld <= d.start) display.push(d)
+    }
+
+    this.text = text
+    this.display = display
+    this.position = this.text.length
+    this.range = null
+  }
+
   setEmoji(input, code, emoji) {
     if (this.word !== input) return false
 
