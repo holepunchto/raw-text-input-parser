@@ -6,7 +6,8 @@ module.exports = class RawTextDisplayParser {
       onmention = noop,
       onlink = noop,
       onpearlink = noop,
-      onemoji = noop
+      onemoji = noop,
+      onclear = noop
     } = options
 
     this.display = display
@@ -17,6 +18,7 @@ module.exports = class RawTextDisplayParser {
     this.onlink = onlink
     this.onpearlink = onpearlink
     this.onemoji = onemoji
+    this.onclear = onclear
     this.start = 0
     this.end = 0
     this.word = ''
@@ -80,6 +82,8 @@ module.exports = class RawTextDisplayParser {
       this.onpearlink(this.word)
     } else if (isEmoji(this.word)) {
       this.onemoji(this.word)
+    } else {
+      this.onclear(this.word)
     }
   }
 
