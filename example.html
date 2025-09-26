@@ -69,6 +69,10 @@
         echo.innerText = p.text
         result.innerText = 'pos=' + p.position + ' word=' + p.word + '\n'
         result.innerText += JSON.stringify(p.display, null, 2)
+
+        inp.value = p.text
+        inp.selectionStart = p.position
+        inp.selectionEnd = p.position
       }
 
       inp.onselectionchange = function (e) {
