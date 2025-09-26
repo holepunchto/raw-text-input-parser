@@ -51,6 +51,50 @@ module.exports = class RawTextDisplayParser {
     this.display.push(upd)
   }
 
+  keyPress(index) {
+    const upd = {
+      type: 'check',
+      start: index,
+      end: index
+    }
+
+    for (let i = 0; i < this.display.length; i++) {
+      if (overlaps(this.display[i], upd)) {
+        this.display.splice(i, 1)
+        for (let j = i-1; j < this.display.length; j++) {
+          this.display[j] = {
+            ...this.display[j],
+            start: this.display[j].start + 1
+          }
+        }
+        break
+      }
+    }
+  }
+
+  backspace(index) {
+    const upd = {
+      type: 'check',
+      start: index,
+      end: index
+    }
+
+    for (let i = 0; i < this.display.length; i++) {
+      const d = this.display[i]
+      if (overlaps(d, upd)) {
+        this.display.splice(i, 1)
+        for (let j = i-1; j < this.display.length; j++) {
+          this.display[j] = {
+            ...this.display[j],
+            start: this.display[j].start - (d.end - d.start)
+          }
+        }
+        break
+      }
+    }
+  }
+
+
   flush (text) {
     for (let i = 0; i < this.display.length; i++) {
       const d = this.display[i]
