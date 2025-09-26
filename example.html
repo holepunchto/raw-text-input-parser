@@ -15,14 +15,39 @@
     <script type="text/javascript" src="index.js"></script>
     <script type="text/javascript">
       const Parser = module.exports
+
+      const emojis = {
+        ':lol:': '🤣',
+        ':pear:': '🍐'
+      }
+
       const p = new Parser({
         onlink(link) {
           console.log('got link', link)
-          p.setLink(link)
+          if (p.setLink(link)) {
+            inp.value = p.text
+            inp.selectionStart = p.position
+            inp.selectionEnd = p.position
+          }
         },
         onmention(mention) {
           console.log('got mention', mention)
-          p.setMention(mention, Math.random()) // just mimick an id
+          if (p.setMention(mention, mention, Math.random())) {
+            inp.value = p.text
+            inp.selectionStart = p.position
+            inp.selectionEnd = p.position
+          }
+        },
+        onemoji(emoji) {
+          if (emojis[emoji]) {
+            console.log('got emoji')
+            if (p.setEmoji(emoji, emoji, emojis[emoji])) {
+              console.log('set text', p.text)
+              inp.value = p.text
+              inp.selectionStart = p.position
+              inp.selectionEnd = p.position
+            }
+          }
         }
       })
 
@@ -30,21 +55,25 @@
       const echo = document.getElementsByTagName('pre')[0]
       const result = document.getElementsByTagName('pre')[1]
 
-      inp.onkeydown = function (e) {
+      inp.oninput = function (e) {
+        if (e.inputType === 'deleteContentBackward') {
+          p.backspace()
+        } else if (e.inputType === 'insertText' || e.inputType === 'insertFromPaste') {
+          p.appendText(e.data)
+        } else if (e.inputType === 'insertLineBreak') {
+          p.appendText('\n')
+        }
+        echo.innerText = p.text
+        result.innerText = 'pos=' + p.position + ' word=' + p.word + '\n'
+        result.innerText += JSON.stringify(p.display, null, 2)
+      }
+
+      inp.onselectionchange = function (e) {
         const start = inp.selectionStart
         const end = inp.selectionEnd
 
         if (start !== p.position) p.setPosition(start)
         if (start !== end) p.selectRange(start, end)
-
-        if (e.key.length === 1) p.appendText(e.key)
-        else if (e.key === 'Enter') p.appendText('\n')
-        else if (e.key === 'Backspace') p.backspace()
-        else console.log('ignored', e.key)
-
-        echo.innerText = p.text
-        result.innerText = 'pos=' + p.position + ' word=' + p.word + '\n'
-        result.innerText += JSON.stringify(p.display, null, 2)
       }
     </script>
   </body>

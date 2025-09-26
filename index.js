@@ -1,6 +1,6 @@
 module.exports = class RawTextDisplayParser {
   constructor(options = {}) {
-    const { text = '', display = [], onmention = noop, onlink = noop } = options
+    const { text = '', display = [], onmention = noop, onlink = noop, onemoji = noop } = options
 
     this.display = display
     this.text = text
@@ -8,6 +8,7 @@ module.exports = class RawTextDisplayParser {
     this.range = null
     this.onmention = onmention
     this.onlink = onlink
+    this.onemoji = onemoji
     this.start = 0
     this.end = 0
     this.word = ''
@@ -35,7 +36,10 @@ module.exports = class RawTextDisplayParser {
 
   backspace() {
     if (this.position === 0 && !this.range) return
-    if (!this.range) this.selectRange(this.position - 1, this.position)
+
+    const last = [...this.text.slice(this.position - 8, this.position)].pop()
+
+    if (!this.range) this.selectRange(this.position - last.length, this.position)
     this.appendText('')
   }
 
@@ -59,6 +63,8 @@ module.exports = class RawTextDisplayParser {
       this.onmention(this.word)
     } else if (isLink(this.word)) {
       this.onlink(this.word)
+    } else if (isEmoji(this.word)) {
+      this.onemoji(this.word)
     }
   }
 
@@ -127,19 +133,55 @@ module.exports = class RawTextDisplayParser {
     }
   }
 
-  setMention(input, id) {
+  setEmoji(input, code, emoji) {
     if (this.word !== input) return false
+
+    if (emoji) {
+      const position = this.position
+      this.selectRange(this.start, this.end)
+      this.appendText(emoji)
+    }
+
+    if (input !== code) {
+      const position = this.position
+      this.selectRange(this.start, this.end)
+      this.appendText(code)
+    }
+
+    const upd = {
+      type: 'emoji',
+      start: this.start,
+      end: this.end,
+      content: code
+    }
+
+    this._clearPrevious(upd)
+    this.display.push(upd)
+
+    return true
+  }
+
+  setMention(input, name, id) {
+    if (this.word !== input) return false
+
+    if (input !== name) {
+      const position = this.position
+      this.selectRange(this.start, this.end)
+      this.appendText(name)
+    }
 
     const upd = {
       type: 'mention',
       start: this.start,
       end: this.end,
-      input,
+      content: name,
       id
     }
 
     this._clearPrevious(upd)
     this.display.push(upd)
+
+    return true
   }
 
   setLink(link) {
@@ -149,12 +191,14 @@ module.exports = class RawTextDisplayParser {
       type: 'link',
       start: this.start,
       end: this.end,
-      input: link,
+      content: link,
       link
     }
 
     this._clearPrevious(upd)
     this.display.push(upd)
+
+    return true
   }
 }
 
@@ -166,6 +210,10 @@ function overlaps(a, b) {
 
 function isLink(word) {
   return word.startsWith('http://') || word.startsWith('https://')
+}
+
+function isEmoji(word) {
+  return word[0] === ':'
 }
 
 function noop() {}
