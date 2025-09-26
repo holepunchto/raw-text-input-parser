@@ -58,7 +58,10 @@
       inp.oninput = function (e) {
         if (e.inputType === 'deleteContentBackward') {
           p.backspace()
-        } else if (e.inputType === 'insertText' || e.inputType === 'insertFromPaste') {
+        } else if (
+          e.inputType === 'insertText' ||
+          e.inputType === 'insertFromPaste'
+        ) {
           p.appendText(e.data)
         } else if (e.inputType === 'insertLineBreak') {
           p.appendText('\n')

@@ -1,6 +1,12 @@
 module.exports = class RawTextDisplayParser {
   constructor(options = {}) {
-    const { text = '', display = [], onmention = noop, onlink = noop, onemoji = noop } = options
+    const {
+      text = '',
+      display = [],
+      onmention = noop,
+      onlink = noop,
+      onemoji = noop
+    } = options
 
     this.display = display
     this.text = text
@@ -39,7 +45,10 @@ module.exports = class RawTextDisplayParser {
 
     const last = [...this.text.slice(this.position - 8, this.position)].pop()
 
-    if (!this.range) this.selectRange(this.position - last.length, this.position)
+    if (!this.range) {
+      this.selectRange(this.position - last.length, this.position)
+    }
+
     this.appendText('')
   }
 
