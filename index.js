@@ -5,6 +5,7 @@ module.exports = class RawTextDisplayParser {
       display = [],
       onmention = noop,
       onlink = noop,
+      onpearlink = noop,
       onemoji = noop
     } = options
 
@@ -14,6 +15,7 @@ module.exports = class RawTextDisplayParser {
     this.range = null
     this.onmention = onmention
     this.onlink = onlink
+    this.onpearlink = onpearlink
     this.onemoji = onemoji
     this.start = 0
     this.end = 0
@@ -43,7 +45,9 @@ module.exports = class RawTextDisplayParser {
   backspace() {
     if (this.position === 0 && !this.range) return
 
-    const last = [...this.text.slice(Math.max(0, this.position - 8), this.position)].pop()
+    const last = [
+      ...this.text.slice(Math.max(0, this.position - 8), this.position)
+    ].pop()
 
     if (!this.range) {
       this.selectRange(this.position - last.length, this.position)
@@ -72,6 +76,8 @@ module.exports = class RawTextDisplayParser {
       this.onmention(this.word)
     } else if (isLink(this.word)) {
       this.onlink(this.word)
+    } else if (isPearLink(this.word)) {
+      this.onpearlink(this.word)
     } else if (isEmoji(this.word)) {
       this.onemoji(this.word)
     }
@@ -205,7 +211,24 @@ module.exports = class RawTextDisplayParser {
     if (this.word !== link) return false
 
     const upd = {
-      type: 'link',
+      type: 'http-link',
+      start: this.start,
+      end: this.end,
+      content: link,
+      link
+    }
+
+    this._clearPrevious(upd)
+    this.display.push(upd)
+
+    return true
+  }
+
+  setPearLink(link) {
+    if (this.word !== link) return false
+
+    const upd = {
+      type: 'pear-link',
       start: this.start,
       end: this.end,
       content: link,
@@ -227,6 +250,10 @@ function overlaps(a, b) {
 
 function isLink(word) {
   return word.startsWith('http://') || word.startsWith('https://')
+}
+
+function isPearLink(word) {
+  return word.startsWith('pear://')
 }
 
 function isEmoji(word) {
