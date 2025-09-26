@@ -77,6 +77,14 @@ module.exports = class RawTextDisplayParser {
     }
   }
 
+  flush(text) {
+    if (this.text !== text) return null
+    return {
+      text,
+      display
+    }
+  }
+
   _updateWord() {
     let start = 0
     let end = this.text.length
