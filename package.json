@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write .",
-    "test": "prettier --check ."
+    "test": "jest && prettier --check ."
   },
   "devDependencies": {
+    "jest": "^29.0.0",
     "prettier": "^3.6.2",
     "prettier-config-holepunch": "^1.0.0"
   },
